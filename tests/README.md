@@ -23,16 +23,16 @@ g++ tests/test_conversor.cpp src/conversor.cpp -o test && ./test
 
 | Requisito | Descrição | Status |
 |-----------|-----------|--------|
-| F1 | Decimal → Binário / Octal / Hex (divisões sucessivas) 
-| F2 | Binário / Octal / Hex → Decimal (somatório posicional) 
-| F3 | Binário ↔ Octal (3 bits) e Binário ↔ Hex (4 bits) direto 
-| F4 | Octal ↔ Hex via binário como intermediário 
-| F5 | Validação de entrada (dígitos inválidos para a base) 
-| F6 | Números fracionários em todas as bases (trunca em 16 casas) 
-| F7 | Modo passo a passo (trace completo do algoritmo)
-| F8 | Modo batch: lê entrada.csv e grava saida.csv 
-| F9 | Modo quiz com 5 níveis de dificuldade e pontuação 
-| F10 | Calculadora de máximos: dado k bits, mostra 2^k-1 nas 4 bases 
+| F1 | Decimal → Binário / Octal / Hex (divisões sucessivas) | ✅ |
+| F2 | Binário / Octal / Hex → Decimal (somatório posicional) | ✅ |
+| F3 | Binário ↔ Octal (3 bits) e Binário ↔ Hex (4 bits) direto | ✅ |
+| F4 | Octal ↔ Hex via binário como intermediário | ✅ |
+| F5 | Validação de entrada (dígitos inválidos para a base) | ✅ |
+| F6 | Números fracionários em todas as bases (trunca em 16 casas) | ✅ |
+| F7 | Modo passo a passo (trace completo do algoritmo) | ✅ |
+| F8 | Modo batch: lê entrada.csv e grava saida.csv | ✅ |
+| F9 | Modo quiz com 5 níveis de dificuldade e pontuação | ✅ |
+| F10 | Calculadora de máximos: dado k bits, mostra 2^k-1 nas 4 bases | ✅ |
 
 ## Exemplos de uso
 
