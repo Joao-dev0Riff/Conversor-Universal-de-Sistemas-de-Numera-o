@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversor de Bases</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0f;
+  --surface:#131316;
+  --surface2:#1a1a1f;
+  --border:#2a2a32;
+  --border2:#3a3a45;
+  --accent:#7f77dd;
+  --accent2:#afa9ec;
+  --text:#f0f0f5;
+  --muted:#888899;
+  --green:#1d9e75;
+  --green2:#5dcaa5;
+  --red:#e24b4a;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Syne',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:2rem 1rem}
+.page{max-width:720px;margin:0 auto}
+
+header{text-align:center;margin-bottom:3rem}
+.logo{font-size:11px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:0.75rem}
+h1{font-size:2.2rem;font-weight:700;color:var(--text);line-height:1.1;margin-bottom:0.5rem}
+.sub{font-size:14px;color:var(--muted)}
+
+.tabs{display:flex;gap:4px;background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:4px;margin-bottom:2rem}
+.tab{flex:1;padding:9px;text-align:center;font-size:13px;font-family:var(--sans);color:var(--muted);background:none;border:none;border-radius:8px;cursor:pointer;transition:all 0.15s;font-weight:500}
+.tab.on{background:var(--surface2);color:var(--text);border:0.5px solid var(--border2)}
+
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1rem}
+
+label{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:var(--mono)}
+input[type=text],select{width:100%;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:15px;outline:none;transition:border 0.15s}
+input[type=text]:focus,select:focus{border-color:var(--accent)}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888899' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select option{background:#1a1a1f}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+
+.swap-btn{background:var(--surface2);border:0.5px solid var(--border2);border-radius:8px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;color:var(--muted);font-size:18px}
+.swap-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.convert-btn{width:100%;margin-top:1rem;padding:14px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em}
+.convert-btn:hover{background:var(--accent2);color:#1a1a2e}
+.convert-btn:active{transform:scale(0.98)}
+
+.result-box{background:var(--bg);border:0.5px solid var(--border2);border-radius:10px;padding:1.25rem;margin-top:1rem;display:none}
+.result-box.show{display:block}
+.result-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
+.result-value{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--green2);word-break:break-all;line-height:1.3}
+.result-trunc{font-size:12px;color:var(--red);margin-top:6px;font-family:var(--mono)}
+
+.steps-box{margin-top:1rem;display:none}
+.steps-box.show{display:block}
+.steps-toggle{background:none;border:0.5px solid var(--border2);border-radius:8px;padding:8px 14px;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s;width:100%}
+.steps-toggle:hover{border-color:var(--accent2);color:var(--accent2)}
+.steps-content{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:1rem;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.8;white-space:pre-wrap;display:none;max-height:300px;overflow-y:auto}
+.steps-content.show{display:block}
+
+.err{background:#2d1515;border:0.5px solid #5a2020;border-radius:10px;padding:1rem;margin-top:1rem;font-family:var(--mono);font-size:13px;color:var(--red);display:none}
+.err.show{display:block}
+
+.section{display:none}
+.section.on{display:block}
+
+.max-result{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+.max-card{background:var(--bg);border:0.5px solid var(--border2);border-radius:10px;padding:1rem}
+.max-card .base{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:6px}
+.max-card .val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);word-break:break-all;line-height:1.4}
+
+.quiz-q{font-family:var(--mono);font-size:1.1rem;color:var(--accent2);margin-bottom:1rem;line-height:1.5}
+.quiz-input{display:flex;gap:8px;align-items:center}
+.quiz-input input{flex:1}
+.quiz-submit{padding:12px 20px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+.quiz-submit:hover{background:var(--accent2);color:#1a1a2e}
+.quiz-fb{margin-top:1rem;padding:1rem;border-radius:10px;font-family:var(--mono);font-size:13px;display:none}
+.quiz-fb.show{display:block}
+.quiz-fb.ok{background:#0d2b20;border:0.5px solid #1d9e75;color:var(--green2)}
+.quiz-fb.wrong{background:#2d1515;border:0.5px solid #5a2020;color:#f09595}
+.score-bar{display:flex;gap:16px;margin-bottom:1.5rem}
+.score-item{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.score-item span{color:var(--text);font-weight:700;font-size:16px;display:block}
+
+.nivel-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+.nivel-btn{padding:6px 14px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s}
+.nivel-btn.on{background:#2d2060;border-color:var(--accent);color:var(--accent2)}
+
+.batch-area{width:100%;min-height:120px;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;resize:vertical;line-height:1.6}
+.batch-area:focus{border-color:var(--accent)}
+.batch-result{margin-top:1rem;background:var(--bg);border:0.5px solid var(--border2);border-radius:10px;padding:1rem;font-family:var(--mono);font-size:12px;color:var(--muted);white-space:pre;overflow-x:auto;display:none;line-height:1.8}
+.batch-result.show{display:block}
+.ok-line{color:var(--green2)}
+.err-line{color:var(--red)}
+
+.copy-btn{background:none;border:0.5px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;float:right;transition:all 0.15s}
+.copy-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="logo">GCC241 — UFLA 2026/1</div>
+    <h1>Conversor de Bases</h1>
+    <p class="sub">Decimal · Binário · Octal · Hexadecimal</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" onclick="trocarAba('converter',this)">Converter</button>
+    <button class="tab" onclick="trocarAba('passos',this)">Passo a passo</button>
+    <button class="tab" onclick="trocarAba('batch',this)">Batch</button>
+    <button class="tab" onclick="trocarAba('quiz',this)">Quiz</button>
+    <button class="tab" onclick="trocarAba('maximos',this)">Máximos</button>
+  </div>
+
+  <div id="sec-converter" class="section on">
+    <div class="card">
+      <div style="margin-bottom:1rem">
+        <label>Número</label>
+        <input type="text" id="num" placeholder="ex: 255  /  FF  /  1010.101" oninput="limparResultado()">
+      </div>
+      <div class="row3">
+        <div>
+          <label>De</label>
+          <select id="orig">
+            <option value="10">Decimal (10)</option>
+            <option value="2">Binário (2)</option>
+            <option value="8">Octal (8)</option>
+            <option value="16">Hexadecimal (16)</option>
+          </select>
+        </div>
+        <button class="swap-btn" onclick="swapBases()" title="trocar bases">&#8644;</button>
+        <div>
+          <label>Para</label>
+          <select id="dest">
+            <option value="2">Binário (2)</option>
+            <option value="10">Decimal (10)</option>
+            <option value="8">Octal (8)</option>
+            <option value="16">Hexadecimal (16)</option>
+          </select>
+        </div>
+      </div>
+      <button class="convert-btn" onclick="converter()">Converter</button>
+      <div class="err" id="err"></div>
+      <div class="result-box" id="result-box">
+        <div class="result-label">Resultado</div>
+        <div class="result-value" id="result-val"></div>
+        <div class="result-trunc" id="result-trunc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sec-passos" class="section">
+    <div class="card">
+      <div style="margin-bottom:1rem">
+        <label>Número</label>
+        <input type="text" id="pnum" placeholder="ex: 13">
+      </div>
+      <div class="row3">
+        <div>
+          <label>De</label>
+          <select id="porig">
+            <option value="10">Decimal (10)</option>
+            <option value="2">Binário (2)</option>
+            <option value="8">Octal (8)</option>
+            <option value="16">Hexadecimal (16)</option>
+          </select>
+        </div>
+        <button class="swap-btn" onclick="swapPassos()">&#8644;</button>
+        <div>
+          <label>Para</label>
+          <select id="pdest">
+            <option value="2">Binário (2)</option>
+            <option value="10">Decimal (10)</option>
+            <option value="8">Octal (8)</option>
+            <option value="16">Hexadecimal (16)</option>
+          </select>
+        </div>
+      </div>
+      <button class="convert-btn" onclick="converterPassos()">Ver passo a passo</button>
+      <div class="err" id="perr"></div>
+      <div class="result-box" id="presult-box">
+        <div class="result-label">Resultado</div>
+        <div class="result-value" id="presult-val"></div>
+      </div>
+      <div class="steps-box" id="steps-box">
+        <button class="steps-toggle" onclick="toggleSteps()">▶ Mostrar trace do algoritmo</button>
+        <div class="steps-content" id="steps-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sec-batch" class="section">
+    <div class="card">
+      <label>Cole as linhas no formato: valor;base_origem;base_destino</label>
+      <textarea class="batch-area" id="batch-in" placeholder="13;10;2&#10;FF;16;10&#10;377;8;16&#10;10.625;10;2&#10;1101;2;8"></textarea>
+      <button class="convert-btn" onclick="rodarBatch()">Converter lote</button>
+      <div class="batch-result" id="batch-out"></div>
+    </div>
+  </div>
+
+  <div id="sec-quiz" class="section">
+    <div class="card">
+      <div class="score-bar">
+        <div class="score-item"><span id="q-pontos">0</span>Pontos</div>
+        <div class="score-item"><span id="q-acertos">0</span>Acertos</div>
+        <div class="score-item"><span id="q-erros">0</span>Erros</div>
+        <div class="score-item"><span id="q-rodada">1</span>Rodada</div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label>Nível de dificuldade</label>
+        <div class="nivel-btns">
+          <button class="nivel-btn on" onclick="setNivel(1,this)">1 — Fácil (0–15)</button>
+          <button class="nivel-btn" onclick="setNivel(2,this)">2 — Médio (0–255)</button>
+          <button class="nivel-btn" onclick="setNivel(3,this)">3 — Difícil (0–4095)</button>
+          <button class="nivel-btn" onclick="setNivel(4,this)">4 — Expert (0–65535)</button>
+          <button class="nivel-btn" onclick="setNivel(5,this)">5 — Mestre (0–1M)</button>
+        </div>
+      </div>
+      <div class="quiz-q" id="quiz-q">Clique em "Nova pergunta" para começar.</div>
+      <div class="quiz-input">
+        <input type="text" id="quiz-resp" placeholder="sua resposta" onkeydown="if(event.key==='Enter')checarQuiz()">
+        <button class="quiz-submit" onclick="checarQuiz()">Confirmar</button>
+      </div>
+      <div class="quiz-fb" id="quiz-fb"></div>
+      <button class="convert-btn" style="margin-top:1rem" onclick="novaQuiz()">Nova pergunta</button>
+    </div>
+  </div>
+
+  <div id="sec-maximos" class="section">
+    <div class="card">
+      <label>Quantidade de bits (k)</label>
+      <input type="text" id="kbits" placeholder="ex: 8" style="margin-bottom:1rem">
+      <button class="convert-btn" onclick="calcMax()">Calcular máximo</button>
+      <div class="err" id="maxerr"></div>
+      <div class="max-result" id="max-result"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASES = {2:'Binário',8:'Octal',10:'Decimal',16:'Hexadecimal'};
+
+function digitoParaChar(d){return d<10?String(d):'ABCDEF'[d-10]}
+function charParaDigito(c){c=c.toUpperCase();if(c>='0'&&c<='9')return parseInt(c);return c.charCodeAt(0)-65+10}
+
+function validar(num,base){
+  let inicio=0;
+  if(num[0]==='-')inicio=1;
+  let temPonto=false;
+  for(let i=inicio;i<num.length;i++){
+    let c=num[i].toUpperCase();
+    if(c==='.'||c===','){if(temPonto)return false;temPonto=true;continue}
+    let v=-1;
+    if(c>='0'&&c<='9')v=parseInt(c);
+    else if(c>='A'&&c<='F')v=c.charCodeAt(0)-65+10;
+    if(v===-1||v>=base)return false;
+  }
+  return true;
+}
+
+function nomBase(b){return BASES[parseInt(b)]||'?'}
+
+function paraDecimal(num,base,log){
+  num=num.replace(',','.');
+  let pt=num.indexOf('.');
+  let inteiro=pt===-1?num:num.slice(0,pt);
+  let fracao=pt===-1?'':num.slice(pt+1);
+  let resultado=0;
+  let exp=inteiro.length-1;
+  log.push('Somatório posicional (base '+base+' → 10):');
+  for(let c of inteiro){
+    let d=charParaDigito(c);
+    let p=d*Math.pow(base,exp);
+    log.push('  '+c.toUpperCase()+' × '+base+'^'+exp+' = '+p);
+    resultado+=p;exp--;
+  }
+  let expF=-1;
+  for(let c of fracao){
+    let d=charParaDigito(c);
+    let p=d*Math.pow(base,expF);
+    log.push('  '+c.toUpperCase()+' × '+base+'^'+expF+' = '+p);
+    resultado+=p;expF--;
+  }
+  log.push('  Total = '+resultado);
+  return resultado;
+}
+
+function decimalPara(num,base,temFracao,log,info){
+  let intPart=Math.floor(num);
+  let fracPart=num-intPart;
+  if(fracPart<0){intPart--;fracPart+=1;}
+  let resultado='';
+  log.push('Divisões sucessivas (dec → base '+base+'):');
+  if(intPart===0){resultado='0';log.push('  0');}
+  else{
+    let digitos='',n=intPart;
+    while(n>0){
+      let r=n%base;
+      log.push('  '+n+' / '+base+' = '+Math.floor(n/base)+'  resto '+r+' ('+digitoParaChar(r)+')');
+      digitos+=digitoParaChar(r);n=Math.floor(n/base);
+    }
+    resultado=digitos.split('').reverse().join('');
+    log.push('  Lendo de baixo pra cima: '+resultado);
+  }
+  if(temFracao&&fracPart>1e-10){
+    resultado+='.';
+    log.push('Multiplicações sucessivas (fração, base '+base+'):');
+    let casas=0,f=fracPart,trunc=false;
+    while(f>1e-10&&casas<16){
+      f*=base;let d=Math.floor(f);if(d>=base)d=base-1;f-=d;
+      resultado+=digitoParaChar(d);
+      log.push('  ×'+base+' → '+digitoParaChar(d)+'  (resto '+f.toFixed(6)+')');
+      casas++;
+    }
+    if(f>1e-10){trunc=true;log.push('  [TRUNCADO em 16 casas]');}
+    info.truncado=trunc;
+  }
+  return resultado;
+}
+
+function binParaOct(bin,log){
+  log.push('Agrupamento de 3 bits (bin → oct):');
+  let pt=bin.indexOf('.');
+  let inteiro=pt===-1?bin:bin.slice(0,pt);
+  let fracao=pt===-1?'':bin.slice(pt+1);
+  while(inteiro.length%3!==0)inteiro='0'+inteiro;
+  let r='';
+  for(let i=0;i<inteiro.length;i+=3){
+    let g=inteiro.slice(i,i+3);
+    let v=(+g[0])*4+(+g[1])*2+(+g[2]);
+    log.push('  '+g+' → '+v);r+=v;
+  }
+  if(fracao){
+    r+='.';
+    while(fracao.length%3!==0)fracao+='0';
+    for(let i=0;i<fracao.length;i+=3){
+      let g=fracao.slice(i,i+3);
+      let v=(+g[0])*4+(+g[1])*2+(+g[2]);
+      log.push('  '+g+' → '+v);r+=v;
+    }
+  }
+  return r;
+}
+
+function octParaBin(oct,log){
+  log.push('Cada dígito octal → 3 bits:');
+  let pt=oct.indexOf('.');
+  let inteiro=pt===-1?oct:oct.slice(0,pt);
+  let fracao=pt===-1?'':oct.slice(pt+1);
+  let toBin3=c=>{let v=parseInt(c);let b=((v>>2)&1)+''+(((v>>1)&1))+''+(v&1);log.push('  '+c+' → '+b);return b;};
+  let r='';
+  for(let c of inteiro)r+=toBin3(c);
+  if(fracao){r+='.';for(let c of fracao)r+=toBin3(c);}
+  return r;
+}
+
+function binParaHex(bin,log){
+  log.push('Agrupamento de 4 bits (bin → hex):');
+  let pt=bin.indexOf('.');
+  let inteiro=pt===-1?bin:bin.slice(0,pt);
+  let fracao=pt===-1?'':bin.slice(pt+1);
+  while(inteiro.length%4!==0)inteiro='0'+inteiro;
+  let r='';
+  for(let i=0;i<inteiro.length;i+=4){
+    let g=inteiro.slice(i,i+4);
+    let v=(+g[0])*8+(+g[1])*4+(+g[2])*2+(+g[3]);
+    log.push('  '+g+' → '+digitoParaChar(v));r+=digitoParaChar(v);
+  }
+  if(fracao){
+    r+='.';
+    while(fracao.length%4!==0)fracao+='0';
+    for(let i=0;i<fracao.length;i+=4){
+      let g=fracao.slice(i,i+4);
+      let v=(+g[0])*8+(+g[1])*4+(+g[2])*2+(+g[3]);
+      log.push('  '+g+' → '+digitoParaChar(v));r+=digitoParaChar(v);
+    }
+  }
+  return r;
+}
+
+function hexParaBin(hex,log){
+  log.push('Cada dígito hex → 4 bits:');
+  let pt=hex.indexOf('.');
+  let inteiro=pt===-1?hex:hex.slice(0,pt);
+  let fracao=pt===-1?'':hex.slice(pt+1);
+  let toBin4=c=>{let v=charParaDigito(c);let b=((v>>3)&1)+''+(((v>>2)&1))+''+(((v>>1)&1))+''+(v&1);log.push('  '+c.toUpperCase()+' → '+b);return b;};
+  let r='';
+  for(let c of inteiro)r+=toBin4(c);
+  if(fracao){r+='.';for(let c of fracao)r+=toBin4(c);}
+  return r;
+}
+
+function remZeros(s){
+  let pt=s.indexOf('.');
+  let i=pt===-1?s:s.slice(0,pt);
+  let f=pt===-1?'':s.slice(pt);
+  let j=0;while(j<i.length-1&&i[j]==='0')j++;
+  return i.slice(j)+f;
+}
+
+function converter2(num,orig,dest,log){
+  orig=parseInt(orig);dest=parseInt(dest);
+  num=num.replace(',','.').toUpperCase();
+  let info={truncado:false};
+  if(orig===dest)return{val:num,info,log};
+  let temFracao=num.includes('.');
+  let val;
+  if(orig===2&&dest===8)val=binParaOct(num,log);
+  else if(orig===8&&dest===2)val=octParaBin(num,log);
+  else if(orig===2&&dest===16)val=binParaHex(num,log);
+  else if(orig===16&&dest===2)val=hexParaBin(num,log);
+  else if(orig===8&&dest===16){let b=octParaBin(num,log);val=binParaHex(b,log);}
+  else if(orig===16&&dest===8){let b=hexParaBin(num,log);val=binParaOct(b,log);}
+  else{let dec=paraDecimal(num,orig,log);val=decimalPara(dec,dest,temFracao,log,info);}
+  val=remZeros(val);
+  return{val,info,log};
+}
+
+function limparResultado(){
+  document.getElementById('result-box').classList.remove('show');
+  document.getElementById('err').classList.remove('show');
+}
+
+function swapBases(){
+  let o=document.getElementById('orig'),d=document.getElementById('dest');
+  let t=o.value;o.value=d.value;d.value=t;
+}
+function swapPassos(){
+  let o=document.getElementById('porig'),d=document.getElementById('pdest');
+  let t=o.value;o.value=d.value;d.value=t;
+}
+
+function converter(){
+  let num=document.getElementById('num').value.trim();
+  let orig=document.getElementById('orig').value;
+  let dest=document.getElementById('dest').value;
+  let errEl=document.getElementById('err');
+  let resBox=document.getElementById('result-box');
+  errEl.classList.remove('show');resBox.classList.remove('show');
+  if(!num){errEl.textContent='Digite um número.';errEl.classList.add('show');return;}
+  if(!validar(num.replace(',','.'),parseInt(orig))){
+    errEl.textContent='Número inválido para a base '+nomBase(orig)+'. Verifique os dígitos.';
+    errEl.classList.add('show');return;
+  }
+  let log=[];
+  let {val,info}=converter2(num,orig,dest,log);
+  document.getElementById('result-val').textContent=val.toUpperCase();
+  document.getElementById('result-trunc').textContent=info.truncado?'(!) Truncado em 16 casas decimais':'';
+  resBox.classList.add('show');
+}
+
+function converterPassos(){
+  let num=document.getElementById('pnum').value.trim();
+  let orig=document.getElementById('porig').value;
+  let dest=document.getElementById('pdest').value;
+  let errEl=document.getElementById('perr');
+  let resBox=document.getElementById('presult-box');
+  let stepsBox=document.getElementById('steps-box');
+  errEl.classList.remove('show');resBox.classList.remove('show');stepsBox.classList.remove('show');
+  if(!num){errEl.textContent='Digite um número.';errEl.classList.add('show');return;}
+  if(!validar(num.replace(',','.'),parseInt(orig))){
+    errEl.textContent='Número inválido para a base '+nomBase(orig)+'.';
+    errEl.classList.add('show');return;
+  }
+  let log=[];
+  let {val}=converter2(num,orig,dest,log);
+  document.getElementById('presult-val').textContent=val.toUpperCase();
+  document.getElementById('steps-content').textContent=log.join('\n');
+  resBox.classList.add('show');stepsBox.classList.add('show');
+}
+
+function toggleSteps(){
+  let c=document.getElementById('steps-content');
+  let btn=document.querySelector('.steps-toggle');
+  c.classList.toggle('show');
+  btn.textContent=c.classList.contains('show')?'▼ Ocultar trace':'▶ Mostrar trace do algoritmo';
+}
+
+function rodarBatch(){
+  let linhas=document.getElementById('batch-in').value.trim().split('\n');
+  let out='';
+  for(let linha of linhas){
+    linha=linha.trim();
+    if(!linha||linha.startsWith('#')){out+='<span class="muted">'+linha+'</span>\n';continue;}
+    let partes=linha.split(';');
+    if(partes.length<3){out+='<span class="err-line">ERRO: formato inválido — '+linha+'</span>\n';continue;}
+    let [val,orig,dest]=partes;
+    val=val.trim();orig=orig.trim();dest=dest.trim();
+    let origN=parseInt(orig),destN=parseInt(dest);
+    if(![2,8,10,16].includes(origN)||![2,8,10,16].includes(destN)){
+      out+='<span class="err-line">ERRO: base inválida — '+linha+'</span>\n';continue;
+    }
+    if(!validar(val.replace(',','.'),origN)){
+      out+='<span class="err-line">ERRO: dígito inválido — '+val+' na base '+origN+'</span>\n';continue;
+    }
+    let log=[];
+    let {val:res}=converter2(val,origN,destN,log);
+    out+='<span class="ok-line">'+val+' (base '+origN+') → '+res.toUpperCase()+' (base '+destN+')</span>\n';
+  }
+  let el=document.getElementById('batch-out');
+  el.innerHTML=out;el.classList.add('show');
+}
+
+let quizNivel=1,quizPerg=null,quizPontos=0,quizAcertos=0,quizErros=0,quizRodada=1;
+function setNivel(n,btn){
+  quizNivel=n;
+  document.querySelectorAll('.nivel-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function baseAleat(){let b=[2,8,10,16];return b[Math.floor(Math.random()*4)];}
+function novaQuiz(){
+  let orig,dest;
+  do{orig=baseAleat();dest=baseAleat();}while(orig===dest);
+  let max=[16,256,4096,65536,1048576][quizNivel-1];
+  let numDec=Math.floor(Math.random()*max);
+  let log=[];
+  let numOrig=orig===10?String(numDec):converter2(String(numDec),'10',orig,log).val;
+  let logR=[];
+  let respCerta=converter2(numOrig,orig,dest,logR).val;
+  quizPerg={numOrig,orig,dest,respCerta};
+  document.getElementById('quiz-q').textContent=
+    'Converta  '+numOrig.toUpperCase()+'  ('+nomBase(orig)+')  →  '+nomBase(dest)+':';
+  document.getElementById('quiz-resp').value='';
+  document.getElementById('quiz-fb').classList.remove('show','ok','wrong');
+  document.getElementById('quiz-resp').focus();
+}
+function checarQuiz(){
+  if(!quizPerg){novaQuiz();return;}
+  let resp=document.getElementById('quiz-resp').value.trim().toUpperCase();
+  let certa=quizPerg.respCerta.toUpperCase();
+  let fb=document.getElementById('quiz-fb');
+  if(resp===certa){
+    let pts=quizNivel*10;quizPontos+=pts;quizAcertos++;
+    fb.textContent='Correto! +'+pts+' pontos';
+    fb.className='quiz-fb show ok';
+  } else {
+    quizErros++;
+    fb.textContent='Errado. A resposta era: '+certa;
+    fb.className='quiz-fb show wrong';
+  }
+  quizRodada++;
+  document.getElementById('q-pontos').textContent=quizPontos;
+  document.getElementById('q-acertos').textContent=quizAcertos;
+  document.getElementById('q-erros').textContent=quizErros;
+  document.getElementById('q-rodada').textContent=quizRodada;
+  quizPerg=null;
+}
+
+function calcMax(){
+  let k=parseInt(document.getElementById('kbits').value.trim());
+  let errEl=document.getElementById('maxerr');
+  errEl.classList.remove('show');
+  document.getElementById('max-result').innerHTML='';
+  if(!k||k<1||k>64){errEl.textContent='Use um valor entre 1 e 64.';errEl.classList.add('show');return;}
+  let bin='1'.repeat(k);
+  let log=[];
+  let dec=paraDecimal(bin,2,log);
+  let l2=[];let oct=decimalPara(dec,8,false,l2,{});
+  let l3=[];let hex=decimalPara(dec,16,false,l3,{});
+  let items=[
+    {base:'Decimal (10)',val:String(dec)},
+    {base:'Binário (2)',val:bin},
+    {base:'Octal (8)',val:oct},
+    {base:'Hexadecimal (16)',val:hex.toUpperCase()},
+  ];
+  let html=items.map(it=>`<div class="max-card"><div class="base">${it.base}</div><div class="val">${it.val}</div></div>`).join('');
+  document.getElementById('max-result').innerHTML=html;
+}
+
+function trocarAba(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+</script>
+</body>
+</html>
